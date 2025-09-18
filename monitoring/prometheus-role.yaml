@@ -1,0 +1,58 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cluster-alerts
+  namespace: monitoring
+spec:
+  groups:
+  - name: cluster-health
+    rules:
+    # CPU usage > 80% for 5m
+    - alert: HighCPUUsage
+      expr: 100 - (avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High CPU usage on {{ $labels.instance }}"
+        description: "CPU usage has been above 80% for more than 5 minutes."
+
+    # Memory usage > 80% for 5m
+    - alert: HighMemoryUsage
+      expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 80
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High memory usage on {{ $labels.instance }}"
+        description: "Memory usage has been above 80% for more than 5 minutes."
+
+    # Disk usage > 80%
+    - alert: HighDiskUsage
+      expr: (node_filesystem_size_bytes{fstype!~"tmpfs|overlay"} - node_filesystem_free_bytes{fstype!~"tmpfs|overlay"}) / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"} * 100 > 80
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High disk usage on {{ $labels.instance }}"
+        description: "Disk usage has been above 80% for more than 10 minutes."
+
+    # Pod CrashLoopBackOff (restart > 5 in 10m)
+    - alert: PodCrashLooping
+      expr: increase(kube_pod_container_status_restarts_total[10m]) > 5
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Pod {{ $labels.pod }} is crashing"
+        description: "Container {{ $labels.container }} in pod {{ $labels.pod }} has restarted more than 5 times in 10 minutes."
+
+    # Node down
+    - alert: NodeDown
+      expr: up == 0
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Node {{ $labels.instance }} is down"
+        description: "Prometheus target {{ $labels.instance }} has been unreachable for more than 2 minutes."
