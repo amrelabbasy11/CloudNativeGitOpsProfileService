@@ -1,0 +1,26 @@
+- name:  Install Kube-Prometheus-Stack on EKS
+  hosts: eks
+  tasks:
+    - name: Add Prometheus Helm repo
+      command: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+      ignore_errors: yes
+
+    - name: Update Helm repos
+      command: helm repo update
+
+    - name: Create monitoring namespace
+      command: kubectl create namespace {{ monitoring_namespace }}
+      ignore_errors: yes
+
+    - name: Install Kube-Prometheus-Stack with external Alertmanager config
+      command: |
+        helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+          --namespace {{ monitoring_namespace }} \
+          --wait
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+
+    - name: Apply custom Alertmanager config
+      command: kubectl apply -f ../monitoring/alertmanager-config.yaml -n {{ monitoring_namespace }}
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
