@@ -8,7 +8,7 @@ on:
       - main
 
 env:
-  AWS_REGION: us-east-2
+  AWS_REGION: us-east-1
   EKS_CLUSTER: eks-cluster
 
 jobs:
