@@ -5,25 +5,26 @@
     argocd_manifest_url: "https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml"
     argocd_ingress_host: "myprofile.com"
   tasks:
-    - name: Create namespace for ArgoCD
-      command: >
-        kubectl create namespace {{ argocd_namespace }} --dry-run=client -o yaml | kubectl apply -f -
+    - name: Create namespace for ArgoCD if it does not exist
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Namespace
+        name: "{{ argocd_namespace }}"
+        state: present
       environment:
         KUBECONFIG: "{{ kubeconfig_path }}"
 
     - name: Install ArgoCD using manifests
-      command: >
-        kubectl apply -n {{ argocd_namespace }} -f {{ argocd_manifest_url }}
+      command: "kubectl apply -n {{ argocd_namespace }} -f {{ argocd_manifest_url }}"
       environment:
         KUBECONFIG: "{{ kubeconfig_path }}"
 
-    - name: Wait for ArgoCD server rollout
-      command: >
-        kubectl -n {{ argocd_namespace }} rollout status deploy/argocd-server
+    - name: Wait for ArgoCD server to be rolled out
+      command: "kubectl -n {{ argocd_namespace }} rollout status deployment/argocd-server --timeout=180s"
       environment:
         KUBECONFIG: "{{ kubeconfig_path }}"
 
-    - name: Create ArgoCD Ingress manifest
+    - name: Create ArgoCD Ingress manifest file
       copy:
         dest: /tmp/argocd-ingress.yaml
         content: |
@@ -41,15 +42,15 @@
               - host: {{ argocd_ingress_host }}
                 http:
                   paths:
-                  - path: /
-                    pathType: Prefix
-                    backend:
-                      service:
-                        name: argocd-server
-                        port:
-                          number: 443
+                    - path: /
+                      pathType: Prefix
+                      backend:
+                        service:
+                          name: argocd-server
+                          port:
+                            number: 80
 
     - name: Apply ArgoCD ingress
-      command: kubectl apply -f /tmp/argocd-ingress.yaml
+      command: "kubectl apply -f /tmp/argocd-ingress.yaml"
       environment:
         KUBECONFIG: "{{ kubeconfig_path }}"
