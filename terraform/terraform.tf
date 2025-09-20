@@ -25,15 +25,6 @@ terraform {
       version = "~> 2.23.0"
     }
   }
-
-  backend "s3" {
-  bucket = "terraformstate2110"
-  key    = "terraform/terraform.tfstate"
-  region = "eu-north-1"
-  }
-
+ 
   required_version = "~> 1.6.3"
 }
-##
-##
-##
