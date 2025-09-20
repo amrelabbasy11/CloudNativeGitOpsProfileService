@@ -5,69 +5,51 @@
     argocd_manifest_url: "https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml"
     argocd_ingress_host: "myprofile.com"
   tasks:
-    - name: Ensure pip is installed
-      apt:
-        name: python3-pip
-        state: present
-        update_cache: yes
-
-    - name: Ensure required Python libraries are installed
-      pip:
-        name:
-          - openshift
-          - pyyaml
-          - kubernetes
-        executable: pip3
-
     - name: Create namespace for ArgoCD
-      kubernetes.core.k8s:
-        state: present
-        definition:
-          apiVersion: v1
-          kind: Namespace
-          metadata:
-            name: "{{ argocd_namespace }}"
+      command: >
+        kubectl create namespace {{ argocd_namespace }} --dry-run=client -o yaml | kubectl apply -f -
       environment:
         KUBECONFIG: "{{ kubeconfig_path }}"
 
-    - name: Install ArgoCD using official manifest
-      kubernetes.core.k8s:
-        state: present
-        namespace: "{{ argocd_namespace }}"
-        src: "{{ argocd_manifest_url }}"
+    - name: Install ArgoCD using manifests
+      command: >
+        kubectl apply -n {{ argocd_namespace }} -f {{ argocd_manifest_url }}
       environment:
         KUBECONFIG: "{{ kubeconfig_path }}"
 
     - name: Wait for ArgoCD server rollout
       command: >
-        kubectl -n {{ argocd_namespace }} rollout status deploy/argocd-server --timeout=300s
+        kubectl -n {{ argocd_namespace }} rollout status deploy/argocd-server
       environment:
         KUBECONFIG: "{{ kubeconfig_path }}"
 
-    - name: Apply ArgoCD Ingress
-      kubernetes.core.k8s:
-        state: present
-        definition:
+    - name: Create ArgoCD Ingress manifest
+      copy:
+        dest: /tmp/argocd-ingress.yaml
+        content: |
           apiVersion: networking.k8s.io/v1
           kind: Ingress
           metadata:
             name: argocd-server-ingress
-            namespace: "{{ argocd_namespace }}"
+            namespace: {{ argocd_namespace }}
             annotations:
               kubernetes.io/ingress.class: alb
               alb.ingress.kubernetes.io/scheme: internet-facing
               alb.ingress.kubernetes.io/target-type: ip
           spec:
             rules:
-              - host: "{{ argocd_ingress_host }}"
+              - host: {{ argocd_ingress_host }}
                 http:
                   paths:
-                    - path: /
-                      pathType: Prefix
-                      backend:
-                        service:
-                          name: argocd-server
-                          port:
-                            number: 80
+                  - path: /
+                    pathType: Prefix
+                    backend:
+                      service:
+                        name: argocd-server
+                        port:
+                          number: 443
+
+    - name: Apply ArgoCD ingress
+      command: kubectl apply -f /tmp/argocd-ingress.yaml
       environment:
         KUBECONFIG: "{{ kubeconfig_path }}"
