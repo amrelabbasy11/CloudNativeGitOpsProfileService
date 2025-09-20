@@ -26,11 +26,11 @@ terraform {
     }
   }
 
-  # backend "s3" {
-  # bucket = "gitopsterrastate"
-  # key    = "terraform.tfstate"
-  # region = "us-east-2"
-  #}
+  backend "s3" {
+  bucket = "terraformstate2110"
+  key    = "terraform.tfstate"
+  region = "eu-north-1"
+  }
 
   required_version = "~> 1.6.3"
 }
