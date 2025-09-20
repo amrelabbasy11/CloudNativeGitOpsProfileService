@@ -54,9 +54,9 @@ jobs:
           access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           registry: ${{ secrets.ECR_REGISTRY }}
-          repo: ${{ secrets.ECR_REPOSITORY }}/app
+          repo: ${{ secrets.ECR_REPOSITORY }}
           region: ${{ env.AWS_REGION }}
-          tags: latest
+          tags: app-latest
           dockerfile: ./Docker-app/Dockerfile
           context: .
 
@@ -66,9 +66,9 @@ jobs:
           access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           registry: ${{ secrets.ECR_REGISTRY }}
-          repo: ${{ secrets.ECR_REPOSITORY }}/db
+          repo: ${{ secrets.ECR_REPOSITORY }}
           region: ${{ env.AWS_REGION }}
-          tags: latest
+          tags: db-latest
           dockerfile: ./Docker-db/Dockerfile
           context: ./Docker-db  
 
@@ -78,9 +78,9 @@ jobs:
           access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           registry: ${{ secrets.ECR_REGISTRY }}
-          repo: ${{ secrets.ECR_REPOSITORY }}/web
+          repo: ${{ secrets.ECR_REPOSITORY }}
           region: ${{ env.AWS_REGION }}
-          tags: latest
+          tags: web-latest
           dockerfile: ./Docker-web/Dockerfile
           context: ./Docker-web
 
