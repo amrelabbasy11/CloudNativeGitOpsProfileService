@@ -104,7 +104,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ansible
 
       - name: Run Ansible Playbook
-        run: ansible-playbook -i ansible/inventory ansible/playbook.yml
+        run: ansible-playbook -i ansible/inventory.ini ansible/install-argocd.yaml absible/install-kube-prometheus-stack.yaml
 
       - name: Install Helm
         run: curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 && chmod +x get_helm.sh && ./get_helm.sh
