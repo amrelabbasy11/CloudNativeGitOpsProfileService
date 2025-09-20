@@ -97,39 +97,53 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Update kubeconfig
-        run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER }}
+      # FIX: Save kubeconfig to a file in the workspace for persistence
+      - name: Update kubeconfig and save to file
+        run: |
+          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER }} --kubeconfig ${{ github.workspace }}/kubeconfig.yaml
 
       - name: Install Ansible
         run: sudo apt-get update && sudo apt-get install -y ansible
 
-      # This step is critical: it installs the Python libraries for the Ansible modules.
       - name: Install Python dependencies for Ansible Kubernetes
         run: |
           python3 -m pip install --upgrade pip
           pip install openshift pyyaml kubernetes
 
-      # This will now work because the playbooks no longer try to use apt.
-      - name: Run Ansible Playbook
-        run: |
-          ansible-playbook -i ansible/inventory.ini ansible/install-argocd.yaml
-          ansible-playbook -i ansible/inventory.ini ansible/install-kube-prometheus-stack.yaml
+      # NEW: Required for the kubernetes.core.k8s module
+      - name: Install Kubernetes Ansible Collection
+        run: ansible-galaxy collection install kubernetes.core
 
+      # FIX: Debug step to show the ansible directory structure
+      - name: Debug - List ansible directory contents
+        run: ls -la ansible/
+
+      # FIX: Pass the absolute path to the kubeconfig file as an extra variable
+      - name: Run Ansible Playbook for ArgoCD
+        run: ansible-playbook -i ansible/inventory.ini ansible/install-argocd.yaml -e "kubeconfig_path=${{ github.workspace }}/kubeconfig.yaml"
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig.yaml
+
+      - name: Run Ansible Playbook for Monitoring
+        run: ansible-playbook -i ansible/inventory.ini ansible/install-kube-prometheus-stack.yaml -e "kubeconfig_path=${{ github.workspace }}/kubeconfig.yaml"
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig.yaml
+
+      # The following steps are redundant if done by Ansible, but kept for completeness
       - name: Install Helm
         run: curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 && chmod +x get_helm.sh && ./get_helm.sh
 
-      - name: Deploy Monitoring
+      - name: Deploy Monitoring (Helm - Redundant if Ansible worked)
         run: |
           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-          helm repo add grafana https://grafana.github.io/helm-charts
           helm repo update
-          helm upgrade --install kube-prom prometheus-community/kube-prometheus-stack -n monitoring --create-namespace
+          helm upgrade --install kube-prom prometheus-community/kube-prometheus-stack -n monitoring --create-namespace --kubeconfig ${{ github.workspace }}/kubeconfig.yaml
 
-      - name: Deploy ArgoCD
+      - name: Deploy ArgoCD (kubectl - Redundant if Ansible worked)
         run: |
-          kubectl create namespace argocd || true
-          kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-          kubectl rollout status deployment argocd-server -n argocd
+          kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f - --kubeconfig ${{ github.workspace }}/kubeconfig.yaml
+          kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml --kubeconfig ${{ github.workspace }}/kubeconfig.yaml
+          kubectl rollout status deployment argocd-server -n argocd --kubeconfig ${{ github.workspace }}/kubeconfig.yaml
 
       - name: Apply ArgoCD App CR
-        run: kubectl apply -f argocd/argocd-app.yaml -n argocd
+        run: kubectl apply -f argocd/argocd-app.yaml -n argocd --kubeconfig ${{ github.workspace }}/kubeconfig.yaml
