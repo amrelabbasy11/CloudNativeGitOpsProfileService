@@ -103,14 +103,16 @@ jobs:
       - name: Install Ansible
         run: sudo apt-get update && sudo apt-get install -y ansible
 
+      # This step is critical: it installs the Python libraries for the Ansible modules.
       - name: Install Python dependencies for Ansible Kubernetes
         run: |
           python3 -m pip install --upgrade pip
           pip install openshift pyyaml kubernetes
 
+      # This will now work because the playbooks no longer try to use apt.
       - name: Run Ansible Playbook
         run: |
-          ansible-playbook -i ansible/inventory.ini ansible/install-argocd.yaml.yaml
+          ansible-playbook -i ansible/inventory.ini ansible/install-argocd.yaml
           ansible-playbook -i ansible/inventory.ini ansible/install-kube-prometheus-stack.yaml
 
       - name: Install Helm
