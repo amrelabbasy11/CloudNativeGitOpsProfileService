@@ -1,9 +1,24 @@
+---
 - name: Deploy ArgoCD on EKS
   hosts: eks
   vars:
     argocd_manifest_url: "https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml"
     argocd_ingress_host: "myprofile.com"
   tasks:
+    - name: Ensure pip is installed
+      apt:
+        name: python3-pip
+        state: present
+        update_cache: yes
+
+    - name: Ensure required Python libraries are installed
+      pip:
+        name:
+          - openshift
+          - pyyaml
+          - kubernetes
+        executable: pip3
+
     - name: Create namespace for ArgoCD
       kubernetes.core.k8s:
         state: present
