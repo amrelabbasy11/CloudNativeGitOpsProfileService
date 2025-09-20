@@ -103,6 +103,11 @@ jobs:
       - name: Install Ansible
         run: sudo apt-get update && sudo apt-get install -y ansible
 
+      - name: Install Python dependencies for Ansible Kubernetes
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install openshift pyyaml kubernetes
+
       - name: Run Ansible Playbook
         run: |
           ansible-playbook -i ansible/inventory.ini ansible/install-argocd.yaml.yaml
