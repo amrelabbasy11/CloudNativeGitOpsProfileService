@@ -146,4 +146,4 @@ jobs:
           kubectl rollout status deployment argocd-server -n argocd --kubeconfig ${{ github.workspace }}/kubeconfig.yaml
 
       - name: Apply ArgoCD App CR
-        run: kubectl apply -f argocd/argocd-app.yaml -n argocd --kubeconfig ${{ github.workspace }}/kubeconfig.yaml
+        run: kubectl apply -f Argo-Cd/argocd-app.yaml -n argocd --kubeconfig ${{ github.workspace }}/kubeconfig.yaml
