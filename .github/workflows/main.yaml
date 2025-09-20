@@ -105,7 +105,7 @@ jobs:
 
       - name: Run Ansible Playbook
         run: |
-          ansible-playbook -i ansible/inventory.ini ansible/install-argocd.yaml
+          ansible-playbook -i ansible/inventory.ini ansible/install-argocd.yaml.yaml
           ansible-playbook -i ansible/inventory.ini ansible/install-kube-prometheus-stack.yaml
 
       - name: Install Helm
