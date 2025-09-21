@@ -14,4 +14,4 @@ spec:
         severity: critical
       annotations:
         summary: "This is a test Slack alert"
-        description: "If you see this in Slack, Alertmanager is working"
+        description: "Test Alertmanager"
