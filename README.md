@@ -1,10 +1,10 @@
-# 🌐 Cloud-Native GitOps Project
+# Cloud-Native GitOps Project
 
 This repository contains the infrastructure, CI/CD pipelines, monitoring stack, and GitOps workflows for deploying a **microservices-based application** on **AWS EKS**. The project demonstrates **end-to-end DevOps automation**, covering Infrastructure as Code (IaC), Continuous Integration, Continuous Deployment, GitOps, Monitoring, and Alerting.
 
 ---
 
-# ⚡ Tools & Technologies
+# Tools & Technologies
 
 This project integrates **modern DevOps, GitOps, and Cloud-Native tools**:
 
@@ -22,16 +22,16 @@ This project integrates **modern DevOps, GitOps, and Cloud-Native tools**:
 
 ---
 
-# 🛠️ Requirements
+#  Requirements
 
-### ✅ Accounts & Cloud Services
+### Accounts & Cloud Services
 
 * AWS Account (EKS, S3, Route53, ECR, Secrets Manager)
 * GitHub (repository, actions, and secrets)
 * SonarCloud (for code quality)
 * Slack Workspace (for webhook integration)
 
-### ✅ Tools & CLI
+### Tools & CLI
 
 * Terraform
 * kubectl
@@ -40,7 +40,7 @@ This project integrates **modern DevOps, GitOps, and Cloud-Native tools**:
 * docker & docker-compose
 * git
 
-### ✅ GitHub Secrets (Required Keys)
+### GitHub Secrets (Required Keys)
 
 * `AWS_ACCESS_KEY_ID`
 * `AWS_SECRET_ACCESS_KEY`
@@ -51,11 +51,11 @@ This project integrates **modern DevOps, GitOps, and Cloud-Native tools**:
 
 ---
 
-# 🚀 Project Workflow & Explanation
+# Project Workflow & Explanation
 
 This project is divided into **four major stages**:
 
-### 1️⃣ Infrastructure Setup (Terraform)
+###  Infrastructure Setup (Terraform)
 
 * Uses **Terraform Registry modules** to provision AWS resources.
 * Backend state stored in **S3 bucket**.
@@ -102,7 +102,7 @@ module "eks" {
 
 ---
 
-### 2️⃣ Application Build & CI/CD
+### Application Build & CI/CD
 
 * GitHub Actions workflow runs on **push/merge**.
 * **Sonar Scanner → SonarCloud → Sonar Gate** ensures code quality.
@@ -131,7 +131,7 @@ CMD ["catalina.sh", "run"]
 
 ---
 
-### 3️⃣ GitOps with ArgoCD
+### GitOps with ArgoCD
 
 * ArgoCD installed in EKS (via Ansible).
 * Watches GitHub repo for manifests: Deployments, Services, Ingress.
@@ -139,7 +139,7 @@ CMD ["catalina.sh", "run"]
 
 ---
 
-### 4️⃣ Monitoring, Alerts & Notifications
+### Monitoring, Alerts & Notifications
 
 * **Prometheus** scrapes metrics.
 * **Grafana** dashboards provide visualization.
@@ -148,9 +148,9 @@ CMD ["catalina.sh", "run"]
 
 ---
 
-# 📊 Architecture & Dashboards
+# Architecture & Dashboards
 
-### 🔹 Overview Architecture
+###  Overview Architecture
 
 This diagram shows the full flow of the system:
 
@@ -161,41 +161,50 @@ This diagram shows the full flow of the system:
 * SonarCloud ensures code quality.
 * Slack receives alerts.
 
-![Overview Architecture](images/overview.png)
+<img width="6000" height="3375" alt="Public Subnet" src="https://github.com/user-attachments/assets/d7e7eae3-fe88-4577-935b-557b9ac32481" />
+
 
 ---
 
-### 🔹 ArgoCD Dashboard
+### ArgoCD Dashboard
 
 Manages GitOps, syncing manifests with EKS.
-![ArgoCD Dashboard](images/argocd.png)
+<img width="1920" height="949" alt="image" src="https://github.com/user-attachments/assets/d2cf92e8-1ee9-40ac-926e-3bc187f89075" />
+
 
 ---
 
-### 🔹 SonarCloud Dashboard
+### SonarCloud Dashboard
 
 Ensures code quality with gates before deployment.
-![SonarCloud Dashboard](images/sonar.png)
+![WhatsApp Image 2025-09-20 at 20 15 59_75733796](https://github.com/user-attachments/assets/2f0665eb-234a-475c-850a-09a850061ed4)
+
 
 ---
 
 ### 🔹 Prometheus & Grafana
 
 Provides monitoring & visualization of metrics.
-![Prometheus](images/prometheus.png)
-![Grafana](images/grafana.png)
+![WhatsApp Image 2025-09-21 at 11 40 24_316baa55](https://github.com/user-attachments/assets/dede3545-2ee6-49a5-af32-7a78fb706a50)
+
+![WhatsApp Image 2025-09-21 at 11 40 02_c0ca66d5](https://github.com/user-attachments/assets/e1903285-0ba6-4e76-b56f-729596832aad)
+
+![WhatsApp Image 2025-09-21 at 11 39 21_6cb41056](https://github.com/user-attachments/assets/f2a4678c-f41d-41b2-864a-ccb34e978afe)
+
+
 
 ---
 
-### 🔹 Application (Web UI)
+###  Application (Web UI)
 
 The application deployed on EKS, accessible at:
-👉 **[https://cloudnativegitopsservice.com](https://cloudnativegitopsservice.com)**
-![App UI](images/app.png)
+ **[https://cloudnativegitopsservice.com](https://cloudnativegitopsservice.com)**
+![WhatsApp Image 2025-09-20 at 19 37 26_d0b19c43](https://github.com/user-attachments/assets/4a30a3d4-5def-40c2-8a71-96b29c8eada9)
+
 
 ---
 
-# 📂 Repository Structure
+# Repository Structure
 
 ```
 ├── terraform/  
@@ -238,7 +247,7 @@ The application deployed on EKS, accessible at:
 
 ---
 
-# 📝 Project Flow Overview
+#  Project Flow Overview
 
 1. Developer pushes code → **GitHub Actions CI pipeline runs**.
 2. **Sonar Scanner checks code quality**.
@@ -251,7 +260,7 @@ The application deployed on EKS, accessible at:
 
 ---
 
-# 📚 References
+# References
 
 * [Terraform Registry](https://registry.terraform.io/)
 * [Kubernetes Documentation](https://kubernetes.io/docs/)
