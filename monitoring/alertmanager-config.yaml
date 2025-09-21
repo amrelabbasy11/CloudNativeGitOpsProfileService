@@ -13,6 +13,5 @@ spec:
         - channel: "#monitoring-alerts"
           sendResolved: true
           apiURL:
-            secret:
-              name: slack-webhook
-              key: url
+            name: slack-webhook   
+            key: url             

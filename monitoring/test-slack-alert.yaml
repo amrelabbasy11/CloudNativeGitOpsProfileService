@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: test-slack-alert
+  namespace: monitoring
+spec:
+  groups:
+  - name: test-alerts
+    rules:
+    - alert: TestSlackAlert
+      expr: vector(1)
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "This is a test Slack alert"
+        description: "If you see this in Slack, Alertmanager is working"
