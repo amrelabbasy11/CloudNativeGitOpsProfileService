@@ -166,13 +166,19 @@ This diagram shows the full flow of the system:
 
 ---
 
+### EKS Cluster After Created in AWS
+![WhatsApp Image 2025-09-21 at 12 23 35_02f67072](https://github.com/user-attachments/assets/ae1b061e-3eb4-43ec-91db-eaf8d44a5636)
+
+
+---
+
 ### ArgoCD Dashboard
 
 Manages GitOps, syncing manifests with EKS.
 <img width="1920" height="949" alt="image" src="https://github.com/user-attachments/assets/d2cf92e8-1ee9-40ac-926e-3bc187f89075" />
 
 
----
+
 
 ### SonarCloud Dashboard
 
