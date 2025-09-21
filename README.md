@@ -1,121 +1,124 @@
-# Cloud-Native GitOps Project
+# 🌐 Cloud-Native GitOps Project
 
-This repository contains the infrastructure, CI/CD pipelines, monitoring stack, and GitOps workflows for deploying a microservices-based application on **AWS EKS** with complete observability, quality gates, and automated scaling.
+This repository demonstrates a **production-grade cloud-native deployment** using **DevOps, GitOps, and Infrastructure as Code (IaC)**. It showcases a complete workflow starting from code quality analysis to automated deployment on AWS EKS with full observability and security.
 
-The project leverages **Terraform, Ansible, ArgoCD, SonarCloud, Prometheus, Grafana, Slack, Route53, and AWS services (ECR, S3, Secrets Manager, Load Balancer, GitHub Secrets)**.
-
----
-
-# 📌 Introduction
-
-The goal of this project is to automate the provisioning, deployment, monitoring, and continuous delivery of a **profile application** using a **GitOps approach**.
-
-Key components include:
-
-* **Terraform** for Infrastructure as Code (EKS, VPC, Route53, S3, ECR).
-* **GitHub Actions** for CI/CD with SonarCloud integration.
-* **Docker & ECR** for containerized application delivery.
-* **ArgoCD** for GitOps continuous deployment.
-* **Prometheus & Grafana** for monitoring & observability.
-* **Slack integration** for alerting.
-* **GitHub Secrets & AWS Secrets Manager** for secure credentials management.
+The stack integrates **Terraform, Kubernetes, Ansible, ArgoCD, SonarCloud, Prometheus, Grafana, Slack, Route53, and AWS services (EKS, S3, ECR, Secrets Manager, Load Balancer)**.
 
 ---
 
-# 🖼️ Project Architecture
+## 📊 Project Architecture
 
 ```mermaid
 flowchart TD
-    User[User Browser] --> Route53[Route53 DNS]
+    User[User Browser] --> Route53[Route 53 - DNS]
     Route53 --> LB[AWS Load Balancer]
-    LB --> Ingress[NGINX Ingress Controller]
+    LB --> Ingress[Ingress Controller (NGINX)]
     Ingress --> Service1[App Service]
     Ingress --> Service2[DB Service]
     Ingress --> Service3[Web Service]
-    Service1 --> Pod1[Tomcat App Pod]
+    Service1 --> Pod1[App Pod]
     Service2 --> Pod2[MySQL Pod]
     Service3 --> Pod3[Nginx Pod]
-
-    Dev[Developer Pushes Code] -->|GitHub Actions| CI[CI Pipeline: Sonar + Docker + ECR]
-    CI --> CD[CD Pipeline: Deploy via ArgoCD]
-    CD --> K8s[EKS Cluster]
-
-    subgraph AWS
-        S3[(S3 Terraform Backend)]
-        ECR[(Elastic Container Registry)]
-        Route53
-        Secrets[AWS Secrets Manager]
-    end
-
-    K8s --> Argo[ArgoCD]
-    K8s --> Prometheus
-    K8s --> Grafana
-    Prometheus --> Slack[Slack Alerts]
 ```
 
 ---
 
-# 🖥️ ArgoCD Dashboard
+## 🖥️ System Components
 
-ArgoCD ensures **GitOps continuous delivery** by syncing Kubernetes manifests from GitHub to the EKS cluster.
-It provides visibility into application health, sync status, and deployment history.
+### 🔎 ArgoCD Dashboard
 
-![ArgoCD Dashboard](./images/argocd-dashboard.png)
-
----
-
-# 🔍 Sonar (Scanner, Gate, Cloud)
-
-Sonar integration ensures **code quality and security** before deployment:
-
-* **Sonar Scanner** analyzes code for bugs, vulnerabilities, and code smells.
-* **Sonar Gate** enforces quality thresholds before merging.
-* **SonarCloud** provides a centralized dashboard for analysis results.
-
-![Sonar Dashboard](./images/sonar-dashboard.png)
+ArgoCD provides a **GitOps-based continuous delivery pipeline**. It continuously monitors the GitHub repo and automatically syncs Kubernetes manifests to the EKS cluster.
+![ArgoCD Dashboard](images/argocd-dashboard.png)
 
 ---
 
-# 📊 Prometheus & Grafana
+### 🧪 Sonar (Scanner, Gate, SonarCloud)
 
-Prometheus collects **metrics from Kubernetes workloads and cluster resources**.
-Grafana visualizes these metrics with custom dashboards.
-
-Slack integration sends **alerts for anomalies** (e.g., pod crashes, resource exhaustion).
-
-![Prometheus](./images/prometheus.png)
-![Grafana](./images/grafana.png)
+Sonar ensures **code quality, bug detection, and vulnerability scanning**. GitHub Actions integrate with Sonar Scanner and SonarCloud to enforce Sonar Gate rules before deploying.
+![SonarCloud](images/sonarcloud.png)
 
 ---
 
-# 📱 Application
+### 📈 Prometheus & Grafana
 
-The deployed application runs inside the **EKS cluster** and is exposed through:
-
-**User → Browser → Route53 → Load Balancer → Ingress → Services → Pods**
-
-* **Route53** resolves the custom domain to the AWS Load Balancer.
-* **Ingress (NGINX)** routes requests to backend services.
-* **Services** forward traffic to Pods (App, DB, Web).
-
-### How to Access
-
-* Visit your **Route53 domain** in a browser:
-
-  ```
-  https://myprofile.com
-  ```
-* The request flows through Route53 → Load Balancer → Ingress → Services → Pods.
-
-![Application Screenshot](./images/app.png)
+Prometheus collects metrics, while Grafana visualizes them in dashboards. Alertmanager integrates with Slack for real-time alerts.
+![Prometheus & Grafana](images/prometheus-grafana.png)
 
 ---
 
-# 🐳 Dockerfiles
+### 🚀 Application
 
-This project uses **official Docker base images** for security and reliability (Tomcat, MySQL, Nginx, OpenJDK).
+The deployed application (App, DB, Web) runs inside EKS and is exposed through Route53, Load Balancer, and Ingress.
+![App](images/app.png)
 
-### 🔹 Application (Tomcat + Java WAR)
+---
+
+## ⚙️ Terraform Infrastructure
+
+Terraform provisions the AWS infrastructure and Kubernetes cluster.
+
+### Backend State (S3)
+
+```hcl
+terraform {
+  backend "s3" {
+    bucket = "terraformstate2110"
+    key    = "terraform/backend"
+    region = "eu-north-1"
+  }
+}
+```
+
+### EKS Module (Terraform Registry)
+
+Using the official [terraform-aws-modules/eks](https://registry.terraform.io/modules/terraform-aws-modules/eks/aws/latest):
+
+```hcl
+module "eks" {
+  source  = "terraform-aws-modules/eks/aws"
+  version = "19.19.1"
+
+  cluster_name    = local.cluster_name
+  cluster_version = "1.29"
+
+  vpc_id                         = module.vpc.vpc_id
+  subnet_ids                     = module.vpc.private_subnets
+  cluster_endpoint_public_access = true
+
+  eks_managed_node_group_defaults = {
+    ami_type = "AL2_x86_64"
+  }
+
+  eks_managed_node_groups = {
+    one = {
+      name          = "node-group-1"
+      instance_types = ["t3.small"]
+      min_size     = 1
+      max_size     = 3
+      desired_size = 2
+    }
+
+    two = {
+      name          = "node-group-2"
+      instance_types = ["t3.small"]
+      min_size     = 1
+      max_size     = 2
+      desired_size = 1
+    }
+  }
+}
+```
+
+* **Cluster version**: Kubernetes `1.29`.
+* **Two managed node groups** (`t3.small`) for scalability.
+* **Networking** integrated with Terraform VPC and private subnets.
+* **Cluster access** exposed via public endpoint.
+
+---
+
+## 🐳 Dockerfiles
+
+### App Service (Java/Tomcat)
 
 ```dockerfile
 FROM openjdk:11 AS BUILD_IMAGE
@@ -130,18 +133,20 @@ EXPOSE 8080
 CMD ["catalina.sh", "run"]
 ```
 
-### 🔹 Database (MySQL)
+### Database (MySQL)
 
 ```dockerfile
 FROM mysql:8.0.33
 LABEL "Project"="Vprofile"
 LABEL "Author"="Amr Elabbasy"
+
 ENV MYSQL_ROOT_PASSWORD="vprodbpass"
 ENV MYSQL_DATABASE="accounts"
+
 ADD db_backup.sql docker-entrypoint-initdb.d/db_backup.sql
 ```
 
-### 🔹 Web (Nginx)
+### Web (Nginx)
 
 ```dockerfile
 FROM nginx
@@ -149,16 +154,18 @@ RUN rm -rf /etc/nginx/conf.d/default.conf
 COPY nginvproapp.conf /etc/nginx/conf.d/vproapp.conf
 ```
 
+> 📌 All base images are **official Docker images** ([Docker Hub](https://hub.docker.com/)) for stability and security.
+
 ---
 
-# 🔐 Secrets Management
+## 🔐 Secrets Management
 
-Sensitive values such as **AWS credentials, Docker/ECR authentication, Sonar tokens, and Slack webhook URLs** are never hardcoded. Instead, they are stored in:
+Secrets are handled securely using:
 
-* **GitHub Secrets** → Used inside GitHub Actions workflows (Terraform, Sonar, Docker/ECR).
-* **AWS Secrets Manager** → Accessed through ExternalSecrets for Kubernetes workloads.
+* **GitHub Secrets** → for CI/CD (AWS keys, Sonar tokens, Docker creds, Slack webhook).
+* **AWS Secrets Manager + ExternalSecrets** → sync into Kubernetes cluster.
 
-Example (GitHub Actions using GitHub Secrets):
+Example:
 
 ```yaml
 env:
@@ -172,23 +179,31 @@ env:
 
 ---
 
-# 📂 Repository Structure
+## 🛠️ CI/CD Workflows
 
-```bash
-├── terraform/                  # Infrastructure as Code
-│   ├── backend.tf
-│   ├── eks-cluster.tf
-│   ├── main.tf
-│   ├── outputs.tf
-│   ├── terraform.tf
-│   └── variables.tf
-│
-├── ansible/                    # Playbooks for installing tools
+### App-CI-CD Workflow
+
+1. Runs **Sonar Scanner → SonarCloud → Sonar Gate**.
+2. Builds Docker images → Pushes to **AWS ECR**.
+3. ArgoCD automatically syncs manifests from GitHub to EKS.
+
+### Terraform-IaC Workflow
+
+1. Initializes **S3 backend**.
+2. Provisions **VPC, EKS, Route53, and Load Balancer**.
+3. Updates infrastructure incrementally (idempotent).
+
+---
+
+## 📂 Repository Structure
+
+```
+├── ansible/
 │   ├── install-argocd.yaml
 │   ├── install-kube-prometheus-stack.yaml
 │   └── inventory.ini
 │
-├── monitoring/                 # Monitoring configs & integrations
+├── monitoring/
 │   ├── alertmanager-config.yaml
 │   ├── clustersecretstore-aws.yaml
 │   ├── external-secrets-crds.yaml
@@ -196,70 +211,57 @@ env:
 │   ├── secret-slack-webhook.yaml
 │   └── test-slack-alert.yaml
 │
-├── k8s/                        # Kubernetes manifests
+├── terraform/
+│   ├── backend.tf
+│   ├── eks-cluster.tf
+│   ├── main.tf
+│   ├── outputs.tf
+│   ├── terraform.tf
+│   └── variables.tf
+│
+├── k8s/
 │   ├── deployments/
 │   ├── services/
 │   ├── ingress/
-│   ├── secrets/
-│   └── configmaps/
+│   └── secrets/
 │
-├── docker/                     # Dockerfiles for App, DB, Web
+├── docker/
 │   ├── Dockerfile.app
 │   ├── Dockerfile.db
 │   └── Dockerfile.web
-│
-├── .github/workflows/          # GitHub Actions pipelines
-│   ├── app-ci-cd.yaml
-│   └── terraform-iac.yaml
-│
-└── README.md
 ```
 
 ---
 
-# ⚙️ Workflows
+## 🌍 Accessing the Application
 
-### 🔹 Terraform IaC Workflow
+The flow for accessing the application is:
 
-* Provisions **VPC, Subnets, EKS Cluster, Route53, ECR, S3 Backend**.
-* Uses **remote S3 backend** for state management.
+```
+User → Route53 → Load Balancer → Ingress → Service → Pod
+```
 
-### 🔹 Application CI/CD Workflow
+* **Domain**: managed by Route53.
+* **Load Balancer**: distributes traffic to Ingress.
+* **Ingress (NGINX)**: routes requests to app, DB, or web services.
+* **Kubernetes Services**: expose Pods internally.
 
-1. **Code pushed to GitHub**.
-2. **Sonar Scanner & Sonar Gate** validate code quality.
-3. **Docker build & push** to AWS ECR.
-4. **ArgoCD syncs manifests** to EKS for deployment.
+Example application URL:
 
-### 🔹 Monitoring & Alerts
-
-* Prometheus collects metrics.
-* Grafana visualizes cluster health.
-* Alertmanager sends **Slack alerts** on failures.
+```
+http://myprofile.com
+```
 
 ---
 
-# 🔗 References
+## 📚 References
 
 * [Terraform Registry](https://registry.terraform.io/)
 * [Kubernetes Documentation](https://kubernetes.io/docs/)
-* [Docker Documentation](https://docs.docker.com/)
-* [SonarCloud Documentation](https://docs.sonarcloud.io/)
+* [Docker Official Images](https://hub.docker.com/)
 * [ArgoCD Documentation](https://argo-cd.readthedocs.io/)
 * [Prometheus Documentation](https://prometheus.io/docs/)
 * [Grafana Documentation](https://grafana.com/docs/)
-* [Slack API Documentation](https://api.slack.com/)
+* [SonarCloud](https://sonarcloud.io/)
 
 ---
-
-# ✅ Conclusion
-
-By following this setup, the application achieves:
-
-* **Scalable infrastructure** via Terraform + EKS.
-* **Automated CI/CD** with GitHub Actions, Docker, ECR, and ArgoCD.
-* **Quality gates** enforced with SonarCloud.
-* **Observability & alerts** via Prometheus, Grafana, and Slack.
-* **Secure secrets management** with GitHub Secrets & AWS Secrets Manager.
-
-This ensures a **secure, automated, and production-ready GitOps deployment pipeline**.
