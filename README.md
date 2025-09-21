@@ -161,7 +161,7 @@ This diagram shows the full flow of the system:
 * SonarCloud ensures code quality.
 * Slack receives alerts.
 
-<img width="6000" height="3375" alt="Public Subnet (3)" src="https://github.com/user-attachments/assets/f527986c-40e0-41a3-9234-a679dbabc102" />
+<img width="6000" height="3375" alt="Public Subnet (4)" src="https://github.com/user-attachments/assets/b41c8a64-d901-4d63-94d1-7adc7e77b38a" />
 
 
 ---
